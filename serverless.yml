@@ -1,0 +1,56 @@
+service: aws-test
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: sa-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:*
+          Resource:
+            - arn:aws:dynamodb:sa-east-1:130962141822:table/UserTable
+resources: # CloudFormation template syntax
+  Resources:
+    UserTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UserTable
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+functions:
+  createUser:
+    handler: "src/createUser.createUser"
+    events:
+      - httpApi:
+          path: /
+          method: post
+  getUsers:
+    handler: "src/getUsers.getUsers"
+    events:
+      - httpApi:
+          path: /
+          method: get
+  getUser:
+    handler: "src/getUser.getUser"
+    events:
+      - httpApi:
+          path: /{id}
+          method: get
+  updateUser:
+    handler: "src/updateUser.updateUser"
+    events:
+      - httpApi:
+          path: /{id}
+          method: put
+    
